@@ -1,0 +1,15 @@
+FROM odoo:18.0
+
+USER root
+
+# Instala Git y las herramientas necesarias para crear un entorno virtual
+RUN apt-get update && \
+    apt-get install -y git python3-venv && \
+    rm -rf /var/lib/apt/lists/*
+
+# Crea el entorno virtual e instala las dependencias
+RUN python3 -m venv /opt/odoo-venv && \
+    /opt/odoo-venv/bin/pip install --upgrade pip && \
+    /opt/odoo-venv/bin/pip install firebase-admin dropbox
+
+USER odoo
