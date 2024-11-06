@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Vista de Lista de Materias -->
+    <record id="view_list_materia" model="ir.ui.view">
+        <field name="name">materias.materia.list</field>
+        <field name="model">materias.materia</field>
+        <field name="arch" type="xml">
+            <list string="Materias">
+                <field name="name"/>
+                <button string="Editar" 
+                        type="object" 
+                        name="action_open_form" 
+                        icon="fa-edit" 
+                        class="btn-secondary"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Vista Formulario de Materias -->
+    <record id="view_form_materia" model="ir.ui.view">
+        <field name="name">materias.materia.form</field>
+        <field name="model">materias.materia</field>
+        <field name="arch" type="xml">
+            <form string="Materia">
+                <sheet>
+                    <group>
+                        <field name="name" placeholder="Nombre de la Materia"/>
+                    </group>
+                    <div class="o_form_buttons_container" style="text-align: right; padding-top: 10px;">
+                    <!-- Botón 'Guardar' -->
+                    <button string="Guardar"
+                            name="action_guardar_y_volver"
+                            type="object"
+                            class="btn-primary"
+                            style="margin-right: 8px;"
+                            invisible="context.get('is_assignment')"/>
+                    <!-- Botón 'Cancelar' -->
+                    <button string="Cancelar"
+                            special="cancel"
+                            class="btn-secondary"
+                            invisible="context.get('is_assignment')"/>
+                    </div>
+                    
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Acción para la lista de Materias -->
+    <record id="action_materias_list" model="ir.actions.act_window">
+        <field name="name">Materias</field>
+        <field name="res_model">materias.materia</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Menú para Materias dentro de Agenda Electrónica -->
+    <menuitem id="menu_materias_root" name="Materias" parent="menu_agenda_root"/>
+    <menuitem id="menu_materias_materia"
+              name="Materias Lista"
+              parent="menu_materias_root"
+              action="action_materias_list"/>
+</odoo>

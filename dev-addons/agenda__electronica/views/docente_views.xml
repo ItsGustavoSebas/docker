@@ -1,0 +1,43 @@
+<odoo>
+    <record id="view_list_docente" model="ir.ui.view">
+        <field name="name">agenda.docente.list</field>
+        <field name="model">agenda.docente</field>
+        <field name="arch" type="xml">
+            <list string="Docentes">
+                <field name="name"/>
+                <field name="ci"/>
+                <field name="telefono"/>
+                <field name="email"/>
+                <field name="curso_ids" widget="many2many_tags"/>
+                <field name="materia_ids" widget="many2many_tags"/>
+                <button string="Editar" type="object" name="action_open_form" icon="fa-edit" class="btn-secondary" groups="base.group_system"/> 
+            </list>
+        </field>
+    </record>
+
+
+    <record id="view_form_docente" model="ir.ui.view">
+        <field name="name">agenda.docente.form</field>
+        <field name="model">agenda.docente</field>
+        <field name="arch" type="xml">
+            <form string="Docente">
+                <sheet>
+                    <group>
+                        <field name="name" placeholder="Nombre del Docente"/>
+                        <field name="ci" placeholder="Cédula de Identidad"/>
+                        <field name="telefono" placeholder="Teléfono"/>
+                        <field name="email" placeholder="Email" required="1" show_if="not user_id"/>
+                        <field name="password" placeholder="Contraseña" required="1" modifiers="{'invisible': [('user_id', '!=', False)]}"/>
+                    </group>
+                    <group string="Asignar Materias y Cursos">
+                        <field name="materia_ids" widget="many2many_tags" placeholder="Selecciona Materias"/>
+                        <field name="curso_ids" widget="many2many_tags" placeholder="Selecciona Cursos"/>
+                    </group>
+                    <button string="Guardar" name="action_guardar_y_volver" type="object" class="btn-primary"/>
+                    <button string="Cancelar" special="cancel" class="btn-secondary"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>
+

@@ -1,0 +1,54 @@
+Cuando creas un model tienes que establecer en el ir.model.acces quienes podran editar, crear y eliminar.
+
+
+en el ir.model.acces, comunicado tiene dos 
+access_comunicados_user,agenda.comunicado,model_agenda_comunicado,base.group_user,1,0,0,0
+access_comunicados_admin,agenda.comunicado,model_agenda_comunicado,base.group_system,1,1,1,1
+
+uno es para el grupo de usuarios, los que no son admins, solo pueden leer, por eso hay un 1 y los demás 0. Mientras que el group_system es para los administradores y tiene
+activado todo en 1. Hice un cambio y ahora un usuario se vuelve administrador automaticamente con el sistema de odoo
+cuando le asignas un rol con el nombre de "Administrador" "Admin" o "Administradores"
+
+
+Separemos por comas:
+-------
+access_comunicados_user     aca en ambos se el acces del modulo
+access_comunicados_admin
+--------------
+
+
+
+
+
+
+-----------
+agenda.comunicado    aca tiene que ser lo mismo de como esta declarado dentro del model, por ejemplo en el model de comunicado está así:
+
+class Comunicado(models.Model):
+    _name = 'agenda.comunicado'
+    _description = 'Comunicado'
+
+entonces se agarra el _name y se pone eso
+----------
+
+
+
+
+
+
+
+---------
+model_agenda_comunicado     se pone model_  y lo mismo que arriba pero en vez de punto un "_"
+-------------------
+
+
+
+
+
+
+
+-----------------
+base.group_user,1,0,0,0   esto es para los usuarios
+group_system,1,1,1,1     esto para los administradores
+--------------
+

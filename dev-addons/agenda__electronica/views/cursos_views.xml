@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Vista de Lista de Cursos -->
+    <record id="view_list_curso" model="ir.ui.view">
+        <field name="name">agenda.curso.list</field>
+        <field name="model">agenda.curso</field>
+        <field name="arch" type="xml">
+            <list string="Cursos">
+                <field name="display_name" string="Curso"/>
+                <button string="Editar" 
+                        type="object" 
+                        name="action_open_form" 
+                        icon="fa-edit" 
+                        class="btn-secondary"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Vista Formulario de Cursos -->
+    <record id="view_form_curso" model="ir.ui.view">
+        <field name="name">agenda.curso.form</field>
+        <field name="model">agenda.curso</field>
+        <field name="arch" type="xml">
+            <form string="Curso">
+                <sheet>
+                    <group>
+                        <field name="curso" placeholder="Curso"/>
+                        <field name="paralelo" placeholder="Paralelo"/>
+                    </group>
+                    <div class="o_form_buttons_container" style="text-align: right; padding-top: 10px;">
+                        <!-- Botón 'Guardar' -->
+                        <button string="Guardar"
+                                name="action_guardar_y_volver"
+                                type="object"
+                                class="btn-primary"
+                                style="margin-right: 8px;"/>
+                        <!-- Botón 'Cancelar' -->
+                        <button string="Cancelar"
+                                special="cancel"
+                                class="btn-secondary"/>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Acción para la lista de Cursos -->
+    <record id="action_cursos_list" model="ir.actions.act_window">
+        <field name="name">Cursos</field>
+        <field name="res_model">agenda.curso</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Menú para Cursos dentro de Agenda Electrónica -->
+    <menuitem id="menu_cursos_root" name="Cursos" parent="menu_agenda_root"/>
+    <menuitem id="menu_cursos" 
+              name="Cursos"
+              parent="menu_cursos_root" 
+              action="action_cursos_list"/>
+</odoo>

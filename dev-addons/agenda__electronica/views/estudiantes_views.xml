@@ -1,0 +1,41 @@
+<odoo>
+    <record id="view_list_estudiante" model="ir.ui.view">
+        <field name="name">agenda.estudiante.list</field>
+        <field name="model">agenda.estudiante</field>
+        <field name="arch" type="xml">
+            <list string="Estudiantes">
+                <field name="name"/>
+                <field name="ci"/>
+                <field name="email"/>
+                <field name="curso_id"/>
+                <button string="Editar" type="object" name="action_open_form" icon="fa-edit" class="btn-secondary" groups="base.group_system"/>
+            </list>
+        </field>
+    </record>
+    
+    <record id="view_form_estudiante" model="ir.ui.view">
+        <field name="name">agenda.estudiante.form</field>
+        <field name="model">agenda.estudiante</field>
+        <field name="arch" type="xml">
+            <form string="Estudiante">
+                <sheet>
+                    <group>
+                        <field name="name" placeholder="Nombre del Estudiante"/>
+                        <field name="ci" placeholder="Cédula de Identidad"/>
+                        <field name="email" placeholder="Email" required="1" show_if="not user_id"/>
+                        <field name="password" placeholder="Contraseña"
+                               required="1" 
+                               modifiers="{'invisible': [('user_id', '!=', False)]}"/>
+                    </group>
+                    <group string="Seleccionar Curso">
+                        <field name="curso_id" widget="radio"/>
+                    </group>
+                    <header>
+                        <button string="Guardar" name="action_guardar_y_volver" type="object" class="btn-primary" primary="True"/>
+                        <button string="Cancelar" special="cancel" class="btn-secondary"/>
+                    </header>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

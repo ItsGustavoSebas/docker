@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Vista Lista de Comunicados -->
+    <record id="view_list_comunicado" model="ir.ui.view">
+        <field name="name">agenda.comunicado.list</field>
+        <field name="model">agenda.comunicado</field>
+        <field name="arch" type="xml">
+            <list string="Comunicados">
+                <field name="motivo"/>
+                <field name="texto"/>
+                <field name="administrativo_id" widget="many2one"/>
+                <field name="rol_ids" widget="many2many_tags"/>
+                <button name="ver_comunicado"
+                        string="Ver Comunicado"
+                        type="object"
+                        class="btn-primary"/>
+                <button name="ver_leidos"
+                    string="Ver Leídos"
+                    type="object"
+                    class="btn-info"
+                    groups="base.group_system"/>     
+            </list>
+        </field>
+    </record>
+
+
+    <!-- Vista Formulario de Comunicados -->
+    <record id="view_form_comunicado" model="ir.ui.view">
+        <field name="name">agenda.comunicado.form</field>
+        <field name="model">agenda.comunicado</field>
+        <field name="arch" type="xml">
+            <form string="Comunicado">
+                <sheet>
+                    <group>
+                        <field name="motivo" placeholder="Motivo del Comunicado"/>
+                        <field name="texto" placeholder="Texto del Comunicado"/>
+                        <field name="archivo" filename="archivo_nombre"/>
+                        <field name="administrativo_id" invisible="1"/>
+                        <field name="rol_ids" widget="many2many_tags" placeholder="Seleccionar Roles"/>
+                    </group>
+                    <div class="o_form_buttons_container" style="text-align: right; padding-top: 10px;">
+                        <button string="Guardar"
+                                name="action_guardar_y_volver"
+                                type="object"
+                                class="btn-primary"/>
+                        <button string="Cancelar"
+                                special="cancel"
+                                class="btn-secondary"/>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Vista Detallada del Comunicado -->
+    <record id="view_html_comunicado" model="ir.ui.view">
+        <field name="name">agenda.comunicado.html</field>
+        <field name="model">agenda.comunicado</field>
+        <field name="arch" type="xml">
+            <form string="Detalle del Comunicado" readonly="1">
+                <sheet>
+                    <!-- este style es para ocultar el field y que directamente me renderice solo la imagen, video, o audio. Aunque aparezca en celeste como si no detectara que es css
+                    si lo detecta jajaj -->
+                    <style>
+                        .contenedor-central {
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            justify-content: center;
+                            text-align: center;
+                            padding: 20px;
+                            box-sizing: border-box;
+                        }
+                        .motivo {
+                            font-size: 2em;
+                            font-weight: bold;
+                        }
+                        .texto {
+                            font-size: 1.2em;
+                            max-width: 600px;
+                        }
+                        .archivo-comunicado {
+                            max-width: 100%;
+                            height: auto;
+                            margin-bottom: 20px;
+                        }
+                    </style>
+                        <div class="contenedor-central">
+                            <!-- Motivo centrado y grande -->
+                            <h1 class="motivo">
+                                <field name="motivo" readonly="1"/>
+                            </h1>
+        
+                            <!-- Texto centrado -->
+                            <div class="texto">
+                                <field name="texto" readonly="1"/>
+                            </div>
+                        </div>
+                        <div class="no-borde ocultar-titulo">
+                            <field name="archivo_audio_html" readonly="1" widget="html"/>
+                        </div>
+                        <!-- Grupo de multimedia centrado -->
+                        <group class="no-borde ocultar-titulo contenedor-central" >
+                            <div class="no-borde ocultar-titulo">
+                                <field name="archivo_imagen_html" readonly="1" widget="html"
+                                       class="imagen-comunicado"/>
+                            </div>
+    
+                            <div class="no-borde ocultar-titulo">
+                                <field name="archivo_video_html" readonly="1" widget="html" class="imagen-comunicado"/>
+                            </div>
+
+                        </group>
+    
+                        <!-- Archivo para descarga -->
+                        <div>
+                            <field name="archivo" filename="archivo_nombre" readonly="1"/>
+                            <field name="archivo_nombre" readonly="1" invisible="1"/>
+                        </div>
+                  
+                    <footer>
+                        <button string="Cerrar" special="cancel" class="btn-secondary"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_usuarios_leidos" model="ir.ui.view">
+        <field name="name">agenda.usuario_comunicado.list</field>
+        <field name="model">agenda.usuario_comunicado</field>
+        <field name="arch" type="xml">
+            <list string="Usuarios que han leído el comunicado">
+                <field name="usuario_id"/>
+                <field name="leido"/>
+                <field name="enviado"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_usuarios_leidos" model="ir.actions.act_window">
+        <field name="name">Usuarios Leídos</field>
+        <field name="res_model">agenda.usuario_comunicado</field>
+        <field name="view_mode">list</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Acción para ver el comunicado -->
+    <record id="action_view_comunicado_html" model="ir.actions.act_window">
+        <field name="name">Ver Comunicado</field>
+        <field name="res_model">agenda.comunicado</field>
+        <field name="view_mode">form</field>
+        <field name="view_id" ref="view_html_comunicado"/>
+        <field name="target">new</field>
+    </record>
+
+
+    <!-- Acción para gestionar Comunicados -->
+    <record id="action_comunicados_list" model="ir.actions.act_window">
+        <field name="name">Comunicados</field>
+        <field name="res_model">agenda.comunicado</field>
+        <field name="view_mode">list,form</field>
+        <field name="domain">['|', ('rol_ids', '=', False), ('rol_ids.user_ids', 'in', [uid])] </field>
+
+    </record>
+
+
+    <!-- Menú para Comunicados -->
+    <menuitem id="menu_comunicados_root" name="Comunicados" parent="menu_agenda_root"/>
+    <menuitem id="menu_comunicados_list"
+              name="Lista de Comunicados"
+              parent="menu_comunicados_root"
+              action="action_comunicados_list"/>
+</odoo>

@@ -1,0 +1,92 @@
+<odoo>
+    <!-- Vista de lista de Notificaciones -->
+    <record id="view_list_notificacion" model="ir.ui.view">
+        <field name="name">agenda.notificacion.list</field>
+        <field name="model">agenda.notificacion</field>
+        <field name="arch" type="xml">
+            <list string="Notificaciones">
+                <field name="type"/>
+                <field name="data"/>
+                <field name="read_at"/>
+                <field name="user_id"/>
+                <button string="Marcar como leído" type="object" name="mark_as_read" icon="fa-check" class="btn-secondary" groups="base.group_system"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_form_notificacion" model="ir.ui.view">
+        <field name="name">agenda.notificacion.form</field>
+        <field name="model">agenda.notificacion</field>
+        <field name="arch" type="xml">
+            <form string="Notificación">
+                <sheet>
+                    <group>
+                        <field name="type" placeholder="Tipo de Notificación"/>
+                        <field name="data" placeholder="Datos"/>
+                        <field name="read_at" placeholder="Fecha de Lectura" readonly="1"/>
+                        <field name="user_id" widget="many2one" placeholder="Usuario"/>
+                    </group>
+                    <button string="Guardar" name="action_guardar_y_volver" type="object" class="btn-primary"/>
+                    <button string="Cancelar" special="cancel" class="btn-secondary"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_list_mis_notificaciones" model="ir.ui.view">
+        <field name="name">agenda.notificacion.mis_notificaciones.list</field>
+        <field name="model">agenda.notificacion</field>
+        <field name="arch" type="xml">
+            <list string="Mis Notificaciones">
+                <field name="type"/>
+                <field name="data"/>
+                <button string="Marcar como leído" type="object" name="mark_as_read" icon="fa-check" class="btn-secondary"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_form_mis_notificaciones" model="ir.ui.view">
+        <field name="name">agenda.notificacion.mis_notificaciones.form</field>
+        <field name="model">agenda.notificacion</field>
+        <field name="arch" type="xml">
+            <form string="Notificación" readonly="1">
+                <sheet>
+                    <group>
+                        <field name="type" placeholder="Tipo de Notificación" readonly="1"/>
+                        <field name="data" placeholder="Datos" readonly="1"/>
+                        <!-- Excluimos los campos read_at y user_id para que no se muestren -->
+                    </group>
+                    <button string="Cerrar" class="btn-secondary" special="cancel"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_notificaciones_usuario" model="ir.actions.act_window">
+        <field name="name">Mis Notificaciones</field>
+        <field name="res_model">agenda.notificacion</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_list_mis_notificaciones"/>
+        <field name="domain">[('user_id', '=', uid)]</field>
+    </record>
+
+    <!-- Acción para Notificaciones -->
+    <record id="action_notificaciones_list" model="ir.actions.act_window">
+        <field name="name">Notificaciones</field>
+        <field name="res_model">agenda.notificacion</field>
+        <field name="view_id" ref="view_list_notificacion"/>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Menú para Notificaciones (visible para todos los usuarios) -->
+    <menuitem id="menu_notificaciones"
+              name="Notificaciones"
+              parent="menu_agenda_root"
+              action="action_notificaciones_list"
+              groups="base.group_system"/>
+
+    <menuitem id="menu_mis_notificaciones"
+              name="Mis Notificaciones"
+              parent="menu_agenda_root"
+              action="action_notificaciones_usuario"/>
+</odoo>

@@ -1,0 +1,51 @@
+el codigo para los seeders debe ser así y deben estar implementados en tu model
+
+
+
+    def init(self):
+        """Crear roles predeterminados si no existen."""
+        default_roles = ['Administradores', 'Docentes', 'Padres', 'Estudiantes']
+
+        for role_name in default_roles:
+            # Verificar si el rol ya existe para evitar duplicados
+            existing_role = self.env['roles.role'].search([('name', '=', role_name)], limit=1)
+            if not existing_role:
+                self.env['roles.role'].create({'name': role_name})
+
+aca en default yo puse los roles por defecto, pueden pedirle a chatgpt para que lo modifique y se pueda recibir más datos.
+
+
+
+
+
+
+también hay otra forma de hacer seeder que es más limpia y es la que utiliza odoo y es con esto:
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="role_administradores" model="roles.role">
+        <field name="name">Administradores</field>
+    </record>
+
+    <record id="role_docentes" model="roles.role">
+        <field name="name">Docentes</field>
+    </record>
+
+    <record id="role_padres" model="roles.role">
+        <field name="name">Padres</field>
+    </record>
+
+    <record id="role_estudiantes" model="roles.role">
+        <field name="name">Estudiantes</field>
+    </record>
+</odoo>
+
+ese codigo que esta allí deberia estar en la carpeta data que contiene el archivo roles_data.xml y luego declarar esa vista  en el manifest
+    'data': [
+        'data/roles_data.xml',
+    ],
+
+de esa forma se genera automaticamente los roles, lo malo es que cada vez que haces upgrade se añaden xd, por eso lo hice desde el model y bajo ese if de que si ya existe
+que no lo añada.
+
+seria bueno investigar sobre como hacer los seeders de forma más eficiente teniendo en cuenta que también tendra que estar a la hora de instalar todo
+

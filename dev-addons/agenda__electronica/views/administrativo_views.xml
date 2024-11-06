@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_list_administrativo" model="ir.ui.view">
+        <field name="name">agenda.administrativo.list</field>
+        <field name="model">agenda.administrativo</field>
+        <field name="arch" type="xml">
+            <list string="Administrativos">
+                <field name="name"/>
+                <field name="cargo"/>
+                <field name="user_id" widget="many2one"/>
+                <button string="Editar" 
+                        type="object" 
+                        name="action_open_form" 
+                        icon="fa-edit" 
+                        class="btn-secondary"/>
+            </list>
+        </field>
+    </record>
+
+    <!-- Vista Formulario de Administrativos -->
+    <record id="view_form_administrativo" model="ir.ui.view">
+        <field name="name">agenda.administrativo.form</field>
+        <field name="model">agenda.administrativo</field>
+        <field name="arch" type="xml">
+            <form string="Administrativo">
+                <sheet>
+                    <group>
+                        <field name="name" placeholder="Nombre del Administrativo"/>
+                        <field name="cargo" placeholder="Cargo"/>
+                        
+                        <!-- Email requerido solo si no hay un user_id seleccionado -->
+                        <field name="email" placeholder="Email" 
+                            modifiers="{'required': [('user_id', '=', False)], 'invisible': [('user_id', '!=', False)]}"/>
+
+                        <!-- Contraseña requerida solo si no hay un user_id seleccionado -->
+                        <field name="password" placeholder="Contraseña" 
+                            modifiers="{'required': [('user_id', '=', False)], 'invisible': [('user_id', '!=', False)]}"/>
+                        
+                        <!-- Selección de usuario existente -->
+                        <field name="user_id" widget="many2one" placeholder="Usuario Existente"/>
+                    </group>
+                    
+                    <button string="Guardar" name="action_guardar_y_volver" type="object" class="btn-primary"/>
+                    <button string="Cancelar" special="cancel" class="btn-secondary"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+</odoo>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Menú principal del módulo Agenda Electrónica -->
+    <menuitem id="menu_agenda_root" name="Agenda Electrónica" sequence="1"/>
+
+    <!-- Acción para Roles, visible solo para administradores -->
+    <record id="action_roles_list" model="ir.actions.act_window">
+        <field name="name">Roles</field>
+        <field name="res_model">roles.role</field>
+        <field name="view_mode">list,form</field><!-- Solo administradores -->
+    </record>
+
+    <!-- Menú para Roles, visible solo para administradores -->
+    <menuitem id="menu_roles"
+              name="Roles"
+              parent="menu_agenda_root"
+              action="action_roles_list"
+              groups="base.group_system"/>
+
+    <!-- Acción para Permisos, visible solo para administradores -->
+    <record id="action_permisos_list" model="ir.actions.act_window">
+        <field name="name">Permisos</field>
+        <field name="res_model">permisos.permiso</field>
+        <field name="view_mode">list,form</field><!-- Solo administradores -->
+    </record>
+
+    <!-- Menú para Permisos, visible solo para administradores -->
+    <menuitem id="menu_permisos"
+              name="Permisos"
+              parent="menu_agenda_root"
+              action="action_permisos_list"
+              groups="base.group_system"/>
+
+
+    <!-- Acciones para cada vista de lista (Ejemplo para estudiantes) -->
+    <record id="action_estudiantes_list" model="ir.actions.act_window">
+        <field name="name">Estudiantes</field>
+        <field name="res_model">agenda.estudiante</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_docentes_list" model="ir.actions.act_window">
+        <field name="name">Docentes</field>
+        <field name="res_model">agenda.docente</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_padres_de_familia_list" model="ir.actions.act_window">
+        <field name="name">Padres de Familia</field>
+        <field name="res_model">agenda.padre_familia</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <record id="action_administrativos_list" model="ir.actions.act_window">
+        <field name="name">Administrativos</field>
+        <field name="res_model">agenda.administrativo</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Menú para Estudiantes (visible para todos los usuarios) -->
+    <menuitem id="menu_usuarios_estudiante" name="Estudiantes" parent="menu_agenda_root" action="action_estudiantes_list" groups="base.group_system"/>
+    <menuitem id="menu_usuarios_docente" name="Docentes" parent="menu_agenda_root" action="action_docentes_list" groups="base.group_system"/>
+    <menuitem id="menu_usuarios_padre_familia" name="Padres de Familia" parent="menu_agenda_root" action="action_padres_de_familia_list" groups="base.group_system"/>
+    <menuitem id="menu_usuarios_administrativo" name="Administrativos" parent="menu_agenda_root" action="action_administrativos_list" groups="base.group_system"/>
+    
+</odoo>

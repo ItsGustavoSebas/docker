@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- Vista Lista de Roles -->
+    <record id="view_list_role" model="ir.ui.view">
+        <field name="name">roles.role.list</field>
+        <field name="model">roles.role</field>
+        <field name="arch" type="xml">
+            <list string="Roles">
+                <field name="name"/>
+                <field name="user_ids" widget="many2many_tags"/>
+                <field name="permiso_ids" widget="many2many_tags"/>
+                <button name="open_user_assignment"
+                        string="Asignar Usuarios y Permisos"
+                        type="object"
+                        icon="fa-cogs" 
+                        groups="base.group_system"/>  
+            </list>
+        </field>
+    </record>
+
+    <!-- Vista Formulario de Roles -->
+    <record id="view_form_role" model="ir.ui.view">
+        <field name="name">roles.role.form</field>
+        <field name="model">roles.role</field>
+        <field name="arch" type="xml">
+            <form string="Rol">
+                <sheet>
+                    <group>
+                        <field name="name" placeholder="Nombre del Rol"/>
+                        <field name="user_ids" 
+                               widget="many2many_tags" 
+                               invisible="context.get('is_assignment') != True"/> 
+                        <field name="permiso_ids" 
+                               widget="many2many_tags"
+                               invisible="context.get('is_assignment') != True"/>
+                    </group>
+                    <div class="o_form_buttons_container" style="text-align: right; padding-top: 10px;">
+                        <!-- Botón 'Guardar' -->
+                        <button string="Guardar" 
+                                name="action_guardar_y_volver" 
+                                type="object" 
+                                invisible="context.get('is_assignment')"
+                                class="btn-primary"/>
+                        <!-- Botón 'Cancelar' -->
+                        <button string="Cancelar" 
+                                special="cancel" 
+                                invisible="context.get('is_assignment')"
+                                class="btn-secondary"/>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Acción para gestionar Roles -->
+    <record id="action_roles_list" model="ir.actions.act_window">
+        <field name="name">Roles</field>
+        <field name="res_model">roles.role</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- Menú para Roles -->
+    <menuitem id="menu_roles_root" name="Roles"/>
+    <menuitem id="menu_roles_role"
+              name="Roles Lista"
+              parent="menu_roles_root"
+              action="action_roles_list"/>
+</odoo>
