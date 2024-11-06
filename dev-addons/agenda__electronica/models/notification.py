@@ -42,23 +42,21 @@ class AgendaNotificacion(models.Model):
         notification_title = "Nueva Notificación"
         notification_body = f"Tienes una {dict(self._fields['type'].selection).get(vals.get('type'))}"
 
-        # Token del dispositivo del usuario
-        user_token = record.user_id.device_token
+        for token_record in record.user_id.device_token_ids:
+            user_token = token_record.device_token
+            if user_token:
+                message = messaging.Message(
+                    notification=messaging.Notification(
+                        title=notification_title,
+                        body=notification_body,
+                    ),
+                    data={"data": record.data},
+                    token=user_token,
+                )
 
-        # Enviar la notificación a Firebase si el token está disponible
-        if user_token:
-            message = messaging.Message(
-                notification=messaging.Notification(
-                    title=notification_title,
-                    body=notification_body,
-                ),
-                data={"data": record.data},
-                token=user_token,
-            )
-
-            # Envía el mensaje
-            response = messaging.send(message)
-            _logger.info("Firebase notification sent: %s", response)
+                # Envía el mensaje
+                response = messaging.send(message)
+                _logger.info("Firebase notification sent to %s: %s", user_token, response)
 
         return record
 
