@@ -44,3 +44,6 @@ access_curso_docente_materia_admin,agenda.curso_docente_materia,model_agenda_cur
 access_notificacion_user,agenda.notificacion,model_agenda_notificacion,base.group_user,1,1,1,1
 access_notificacion_admin,agenda.notificacion,model_agenda_notificacion,base.group_system,1,1,1,1
 
+access_user_device_token_user,user.device.token,model_user_device_token,base.group_user,1,1,1,1
+access_user_device_token_admin,user.device.token,model_user_device_token,base.group_system,1,1,1,1
+
