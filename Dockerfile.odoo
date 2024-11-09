@@ -1,15 +1,15 @@
 FROM odoo:18.0
 
+# Cambia a root para poder instalar paquetes del sistema
 USER root
 
-# Instala Git y las herramientas necesarias para crear un entorno virtual
+# Instala Git y las dependencias necesarias globalmente en el sistema
 RUN apt-get update && \
-    apt-get install -y git python3-venv && \
+    apt-get install -y git && \
     rm -rf /var/lib/apt/lists/*
 
-# Crea el entorno virtual e instala las dependencias
-RUN python3 -m venv /opt/odoo-venv && \
-    /opt/odoo-venv/bin/pip install --upgrade pip && \
-    /opt/odoo-venv/bin/pip install firebase-admin dropbox
+# Instala las librerías de Python necesarias globalmente, omitiendo el entorno virtual
+RUN pip3 install --no-cache-dir --break-system-packages firebase-admin dropbox pydub SpeechRecognition
 
+# Cambia de nuevo al usuario odoo
 USER odoo

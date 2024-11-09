@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <record id="view_list_evento" model="ir.ui.view">
+        <field name="name">agenda.evento.list</field>
+        <field name="model">agenda.evento</field>
+        <field name="arch" type="xml">
+            <list string="Eventos">
+                <field name="tipo"/>
+                <field name="descripcion"/>
+                <field name="fecha"/>
+                <button name="action_open_form" string="Editar" type="object" class="btn-primary"/>
+                <button name="action_registrar_asistencia"
+                        string="Registrar Asistencia"
+                        type="object"
+                        class="btn-primary"/>
+                <button name="action_abrir_ver_evento" string="Ver Evento" type="object" class="btn-primary"/>
+                <button name="action_abrir_subir_audio" string="Subir Audio" type="object" class="btn-secondary"/>  
+            </list>
+        </field>
+    </record>
+
+    <record id="view_form_evento" model="ir.ui.view">
+        <field name="name">agenda.evento.form</field>
+        <field name="model">agenda.evento</field>
+        <field name="arch" type="xml">
+            <form string="Evento">
+                <sheet>
+                    <group>
+                        <field name="tipo" required="1"/>
+                        <field name="descripcion"/>
+                        <field name="fecha" required="1"/>
+                        <field name="necesita_aceptacion"/>
+                        <field name="archivo_documento" filename="documento_nombre"/>
+                        <field name="curso_ids" widget="many2many_tags" placeholder="Seleccionar Cursos"/>
+                    </group>
+                    <div class="o_form_buttons_container" style="text-align: right; padding-top: 10px;">
+                        <button string="Guardar"
+                                name="action_guardar_y_volver"
+                                type="object"
+                                class="btn-primary"/>
+                        <button string="Cancelar"
+                                special="cancel"
+                                class="btn-secondary"/>
+                    </div>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_form_subir_audio" model="ir.ui.view">
+        <field name="name">agenda.evento.subir_audio.form</field>
+        <field name="model">agenda.evento</field>
+        <field name="arch" type="xml">
+            <form string="Subir Audio">
+                <sheet>
+                    <group>
+                        <field name="archivo_audio" filename="audio_nombre"/>
+                    </group>
+                    <footer>
+                        <button string="Subir y Generar Resumen" name="action_generar_resumen" type="object" class="btn-primary"/>
+                        <button string="Cerrar" special="cancel" class="btn-secondary"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="view_form_ver_evento" model="ir.ui.view">
+        <field name="name">agenda.evento.ver_evento.form</field>
+        <field name="model">agenda.evento</field>
+        <field name="arch" type="xml">
+            <form string="Detalle del Evento" readonly="1">
+                <sheet>
+                    <group>
+                        <field name="tipo" readonly="1"/>
+                        <field name="descripcion" readonly="1"/>
+                        <field name="fecha" readonly="1"/>
+                        
+                        <!-- Campo de audio con widget de reproducción -->
+                        <field name="archivo_audio" widget="media" filename="audio_nombre" readonly="1"/>
+                        
+                        <field name="resumen" readonly="1"/>
+                    </group>
+                    <footer>
+                        <button string="Cerrar" special="cancel" class="btn-secondary"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+
+
+    <record id="view_list_evento_estudiante" model="ir.ui.view">
+        <field name="name">agenda.evento_estudiante.list</field>
+        <field name="model">agenda.evento_estudiante</field>
+        <field name="arch" type="xml">
+            <list string="Registrar Asistencia" editable="bottom" create="false">
+                <field name="estudiante_id" string="Estudiante" readonly="1"/>
+                <field name="leido" readonly="1"/>
+                <field name="confirmacion" readonly="1"/>
+                <field name="asistencia" widget="boolean" string="Asistencia"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="action_eventos_list" model="ir.actions.act_window">
+        <field name="name">Eventos</field>
+        <field name="res_model">agenda.evento</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_list_evento"/>
+    </record>
+
+    <menuitem id="menu_eventos_list"
+              name="Lista de Eventos"
+              parent="menu_agenda_root"
+              action="action_eventos_list"/>
+</odoo>
