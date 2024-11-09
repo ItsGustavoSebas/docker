@@ -9,6 +9,7 @@ from . import docente
 from . import padre_de_familia
 from . import comunicado
 from . import usuario_comunicado
+from . import user_device
 from . import res_users
 from . import materia
 from . import curso

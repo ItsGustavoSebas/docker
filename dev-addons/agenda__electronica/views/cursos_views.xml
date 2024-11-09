@@ -27,6 +27,16 @@
                         <field name="curso" placeholder="Curso"/>
                         <field name="paralelo" placeholder="Paralelo"/>
                     </group>
+                    <!-- Botón para Importar Estudiantes y Padres -->
+                    <group>
+                        <field name="csv_file" widget="binary" string="Archivo CSV" filename="csv_filename"/>
+                        <field name="csv_filename" invisible="1"/>
+                        <button string="Importar Estudiantes y Padres"
+                                type="object"
+                                name="importar_estudiantes_y_padres"
+                                class="btn-primary"
+                                icon="fa-upload"/>
+                    </group>
                     <div class="o_form_buttons_container" style="text-align: right; padding-top: 10px;">
                         <!-- Botón 'Guardar' -->
                         <button string="Guardar"

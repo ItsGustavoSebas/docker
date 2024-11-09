@@ -49,3 +49,7 @@ access_eventos_admin,agenda.evento,model_agenda_evento,base.group_system,1,1,1,1
 
 access_evento_estudiantes_user,agenda.evento_estudiante,model_agenda_evento_estudiante,base.group_user,1,1,1,1
 access_evento_estudiantes_admin,agenda.evento_estudiante,model_agenda_evento_estudiante,base.group_system,1,1,1,1
+
+access_user_device_token_user,user.device.token,model_user_device_token,base.group_user,1,1,1,1
+access_user_device_token_admin,user.device.token,model_user_device_token,base.group_system,1,1,1,1
+
