@@ -9,7 +9,8 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 
 # Instala las librerías de Python necesarias globalmente, omitiendo el entorno virtual
-RUN pip3 install --no-cache-dir --break-system-packages firebase-admin dropbox
+RUN pip3 install --no-cache-dir --break-system-packages firebase-admin dropbox pydub SpeechRecognition
 
 # Cambia de nuevo al usuario odoo
 USER odoo
+

@@ -16,3 +16,5 @@ from . import curso
 from . import docente_materia
 from . import curso_docente_materia
 from . import notification
+from . import evento
+from . import EventoEstudianteRel
