@@ -1,9 +1,15 @@
 from odoo import models, fields, api
-from pydub import AudioSegment
-import speech_recognition as sr
-from io import BytesIO
+from google.cloud import speech, storage
+from google.oauth2 import service_account
 import base64
-
+import io
+from pydub import AudioSegment
+import requests
+import openai
+import logging
+import time
+import os
+_logger = logging.getLogger(__name__)
 
 class Evento(models.Model):
     _name = 'agenda.evento'
@@ -37,6 +43,17 @@ class Evento(models.Model):
         help="Selecciona los cursos para los que este evento será relevante"
     )
     
+    @api.depends('curso_ids')
+    def _compute_es_evento_docente(self):
+        for record in self:
+            docente = self.env['agenda.docente'].search([('user_id', '=', self.env.uid)], limit=1)
+            if docente:
+                # Verifica si hay al menos un curso en común entre curso_ids del evento y curso_ids del docente
+                record.es_evento_docente = bool(set(record.curso_ids.ids) & set(docente.curso_ids.ids))
+            else:
+                record.es_evento_docente = False
+
+    
     def action_abrir_subir_audio(self):
         return {
             'type': 'ir.actions.act_window',
@@ -59,37 +76,157 @@ class Evento(models.Model):
             'target': 'new',
             'res_id': self.id,
         }
+    
+    def obtener_access_token(self):
+        client_id = "geob75yb6u7h1zc"
+        client_secret = "qxc0uucnyvs4q85"
+        refresh_token = "bZTyFYYGNPEAAAAAAAAAAX1SF_PnxxcJ5rsoAl3RDmoNCxdijNFtxj_CnmeDvG71"
+        
+        url = "https://api.dropbox.com/oauth2/token"
+        headers = {"Content-Type": "application/x-www-form-urlencoded", "User-Agent": "OdooBot/1.0"}
+        data = "grant_type=refresh_token&refresh_token={}&client_id={}&client_secret={}".format(refresh_token, client_id, client_secret)
 
-    # Método para procesar el audio y generar el resumen
+        try:
+            response = requests.post(url, headers=headers, data=data)
+            _logger.info("Status Code de la solicitud de token: %s", response.status_code)
+            _logger.info("Respuesta JSON de la solicitud de token: %s", response.json())
+            
+            if response.status_code == 200:
+                return response.json().get("access_token")
+            else:
+                raise Exception(f"Error al obtener access token: {response.json()}")
+        
+        except Exception as e:
+            _logger.error("Error durante la solicitud del token: %s", e)
+            raise Exception(f"Error al obtener access token: {str(e)}")
+
+    def subir_audio_a_gcs(self, archivo_audio, nombre_archivo):
+        # Carga las credenciales y configura Google Cloud Storage
+        cred_path = os.path.join(os.path.dirname(__file__), '../static/speech/credenciales-google.json')
+        credenciales = service_account.Credentials.from_service_account_file(cred_path)
+        storage_client = storage.Client(credentials=credenciales)
+        
+        bucket_name = 'agenda-electronica'  # Especifica tu bucket de GCS
+        bucket = storage_client.bucket(bucket_name)
+        blob = bucket.blob(nombre_archivo)
+
+        try:
+            # Decodifica el archivo de audio
+            archivo_decodificado = base64.b64decode(archivo_audio)
+            
+            # Convierte el archivo a mono y 16000 Hz
+            audio_segment = AudioSegment.from_file(io.BytesIO(archivo_decodificado), format="wav")
+            audio_segment = audio_segment.set_frame_rate(16000).set_channels(1)
+            
+            # Exporta el audio ajustado a un objeto BytesIO
+            audio_wav = io.BytesIO()
+            audio_segment.export(audio_wav, format="wav")
+            audio_wav.seek(0)
+
+            # Sube el archivo convertido a GCS
+            blob.upload_from_string(audio_wav.read(), content_type='audio/wav')
+            gcs_uri = f'gs://{bucket_name}/{nombre_archivo}'
+            _logger.info("Archivo subido a Google Cloud Storage: %s", gcs_uri)
+            return gcs_uri
+        except Exception as e:
+            _logger.error("Error al subir el archivo a Google Cloud Storage: %s", e)
+            raise Exception(f"Error al subir el archivo a Google Cloud Storage: {e}")
+
+    def _configurar_api_openai(self):
+        # Configura la clave de API de OpenAI
+        openai.api_key = "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"
+
+    def _generar_resumen_con_ia(self, transcripcion):
+        self._configurar_api_openai()
+        
+        _logger.info("Iniciando generación de resumen de la transcripción con IA.")
+
+        # Construcción del prompt para el resumen
+        prompt = (
+            f"Genera un resumen en formato de puntos numerados de los temas más importantes de la siguiente transcripción: {transcripcion}. "
+            "Cada punto debe contener un tema principal o una conclusión importante discutida en la reunión, en el formato:\n"
+            "1.- Primer punto importante\n"
+            "2.- Segundo punto importante\n"
+            "3.- Tercer punto importante\n"
+            "Mantén los puntos claros y breves."
+        )
+
+        _logger.info("Prompt para OpenAI: %s", prompt)
+
+        try:
+            time.sleep(1)
+            # Llama a la API de OpenAI para obtener el resumen
+            response = openai.chat.completions.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "user", "content": prompt},
+                ]
+            )
+            _logger.info("Respuesta completa de OpenAI: %s", response)
+
+            # Accede a 'choices' y al 'content' de la respuesta de manera correcta
+            if hasattr(response, 'choices') and response.choices:
+                resumen_generado = response.choices[0].message.content.strip()
+                
+                _logger.info("Resumen generado por OpenAI: %s", resumen_generado)
+                
+                return resumen_generado
+            else:
+                _logger.warning("No se recibieron opciones en 'choices' en la respuesta de OpenAI")
+                return "No se pudo generar el resumen de la transcripción."
+
+        except Exception as e:
+            _logger.error("Error al llamar a OpenAI: %s", e)
+            return f"Error al generar el resumen: {e}"
+
     def action_generar_resumen(self):
         if self.archivo_audio:
-            # Decodifica el archivo de audio de base64 a BytesIO
-            audio_data = base64.b64decode(self.archivo_audio)
-            audio_file = BytesIO(audio_data)
-
-            # Convierte el archivo de audio a WAV si es necesario
+            nombre_archivo = f'audio_evento_new_{self.id}.wav'
+            bucket_name = 'agenda-electronica' 
             try:
-                # Intenta cargar el archivo de audio en pydub
-                audio_segment = AudioSegment.from_file(audio_file)
-                # Convierte el archivo a WAV y guarda en BytesIO
-                wav_io = BytesIO()
-                audio_segment.export(wav_io, format="wav")
-                wav_io.seek(0)  # Regresa al inicio del archivo WAV
+                _logger.info("Iniciando subida de archivo a Google Cloud Storage...")
+                gcs_uri = self.subir_audio_a_gcs(self.archivo_audio, nombre_archivo)
+                _logger.info("Archivo subido exitosamente. Obteniendo transcripción...")
 
-                # Crear el objeto de reconocimiento de voz
-                recognizer = sr.Recognizer()
-                with sr.AudioFile(wav_io) as source:
-                    audio = recognizer.record(source)
-                    # Transcribir el audio a texto en español
-                    texto_transcrito = recognizer.recognize_google(audio, language='es-ES')
-                    self.resumen = texto_transcrito
-            except sr.UnknownValueError:
-                self.resumen = "No se pudo entender el audio."
-            except sr.RequestError:
-                self.resumen = "Error en la solicitud de reconocimiento de voz."
+                # Configura las credenciales de Google Speech
+                cred_path = os.path.join(os.path.dirname(__file__), '../static/speech/credenciales-google.json')
+                credenciales = service_account.Credentials.from_service_account_file(cred_path)
+                client = speech.SpeechClient(credentials=credenciales)
+
+                # Configuración para el reconocimiento de audio
+                config = speech.RecognitionConfig(
+                    encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
+                    sample_rate_hertz=16000,  # Ahora coincide con el archivo de audio
+                    language_code="es-ES"
+                )
+                audio = speech.RecognitionAudio(uri=gcs_uri)
+
+                # Usa long_running_recognize para archivos largos
+                _logger.info("Usando long_running_recognize con GCS URI...")
+                operation = client.long_running_recognize(config=config, audio=audio)
+                response = operation.result(timeout=300)  # Ajusta el tiempo de espera según sea necesario
+
+                if not response.results:
+                    _logger.warning("No se recibieron resultados de la transcripción.")
+                    self.resumen = "No se pudo transcribir el audio."
+                else:
+                    transcripcion = ' '.join([result.alternatives[0].transcript for result in response.results])
+                    _logger.info("Transcripción obtenida exitosamente.")
+                    if transcripcion:
+                        # Genera un resumen de la transcripción usando IA
+                        resumen = self._generar_resumen_con_ia(transcripcion)
+                        self.resumen = resumen
+                    else:
+                        self.resumen = "No se pudo obtener una transcripción del audio."
+
+                # Opcional: Elimina el archivo de GCS después de la transcripción
+                blob = storage.Client(credentials=credenciales).bucket(bucket_name).blob(nombre_archivo)
+                blob.delete()
+                _logger.info("Archivo eliminado de Google Cloud Storage.")
+
             except Exception as e:
-                self.resumen = f"Error al procesar el audio: {str(e)}"
-
+                _logger.error("Error durante la generación de resumen: %s", e)
+                self.resumen = f"Error al procesar el archivo de audio: {e}\n"
 
     @api.model
     def create(self, vals):

@@ -38,6 +38,9 @@ class Docente(models.Model):
         }
         new_user = self.env['res.users'].create(user_vals)
 
+        group_user = self.env.ref('base.group_user')  
+        new_user.write({'groups_id': [(4, group_user.id)]})
+
         vals['user_id'] = new_user.id
         record = super(Docente, self).create(vals)
 
