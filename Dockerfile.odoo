@@ -5,11 +5,11 @@ USER root
 
 # Instala Git y las dependencias necesarias globalmente en el sistema
 RUN apt-get update && \
-    apt-get install -y git && \
+    apt-get install -y git ffmpeg && \
     rm -rf /var/lib/apt/lists/*
 
 # Instala las librerías de Python necesarias globalmente, omitiendo el entorno virtual
-RUN pip3 install --no-cache-dir --break-system-packages firebase-admin dropbox pydub SpeechRecognition
+RUN pip3 install --no-cache-dir --break-system-packages firebase-admin dropbox google-cloud-speech pydub openai --ignore-installed
 
 # Cambia de nuevo al usuario odoo
 USER odoo
