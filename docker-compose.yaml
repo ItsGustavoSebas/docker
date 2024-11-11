@@ -8,6 +8,7 @@ services:
       - db
     ports:
       - "8069:8069"
+      - "5432:5432"
     volumes:
       - odoo-web-data:/var/lib/odoo
       - ./odoo-config:/etc/odoo
