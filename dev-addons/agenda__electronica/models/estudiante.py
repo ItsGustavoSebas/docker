@@ -12,6 +12,30 @@ class Estudiante(models.Model):
     email = fields.Char(string='Email', compute='_compute_email', inverse='_set_email', store=False)
     password = fields.Char(string='Password', store=False)
 
+    padre_familia_ids = fields.Many2many(
+        'agenda.padre_familia',
+        'padre_estudiante_rel',  
+        'estudiante_id',         
+        'padre_id',             
+        string='Padres de Familia'
+    )
+
+    desafio_ids = fields.One2many(
+        'agenda.desafio_estudiante',  
+        'estudiante_id', 
+        string='Desafíos Participados'
+    )
+
+
+
+    opciones_ids = fields.One2many(
+        'agenda.estudiante_opciones',  
+        'estudiante_id',
+        string='Opciones Seleccionadas'
+    )
+
+    
+
     @api.depends('user_id')
     def _compute_email(self):
         for record in self:

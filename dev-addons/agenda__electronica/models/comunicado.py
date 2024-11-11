@@ -20,6 +20,17 @@ class Comunicado(models.Model):
     archivo_audio_html = fields.Html(string="Audio HTML", compute="_compute_archivo_audio_html", sanitize=False, store=False)
     public_url = fields.Char(string="Public URL", store=True)
 
+    allowed_user_ids = fields.Many2many(
+        'res.users',
+        string='Usuarios Permitidos',
+        compute='_compute_allowed_user_ids',
+        store=True
+    )
+
+
+
+    matching_user = fields.Boolean(string="Usuario coincide", compute="_compute_matching_user")
+
 
     archivo_nombre = fields.Char(string="Nombre del Archivo", store=True)  # Campo para almacenar el nombre con extensión.
     # Relación con los Administrativos (Many2one)
@@ -34,6 +45,11 @@ class Comunicado(models.Model):
     rol_ids = fields.Many2many(
         'roles.role', 
         string='Enviar a Roles'
+    )
+
+    curso_ids = fields.Many2many(
+        'agenda.curso', 
+        string='Enviar a Cursos'
     )
 
     # Relación con Usuarios que han leído el comunicado (Tabla Intermedia)
@@ -52,15 +68,16 @@ class Comunicado(models.Model):
             'name': 'Usuarios Leídos',
             'res_model': 'agenda.usuario_comunicado',
             'view_mode': 'list',
+            'view_id': self.env.ref('agenda__electronica.view_usuarios_leidos').id,
             'target': 'new',
             'domain': [('comunicado_id', '=', self.id)],
             'context': {'create': False}, 
         }
-    
 
+    
     def action_guardar_y_volver(self):
         """Guardar el comunicado y volver a la lista."""
-        domain = ['|', ('rol_ids', '=', False), ('rol_ids.user_ids', 'in', [self.env.uid])]
+        domain = [('allowed_user_ids', 'in', [self.env.uid])]
 
         self.ensure_one()
         return {
@@ -170,6 +187,12 @@ class Comunicado(models.Model):
             ])
 
 
+        if comunicado.curso_ids:
+            estudiantes = self.env['agenda.estudiante'].search([
+                ('curso_id', 'in', comunicado.curso_ids.ids)
+            ])
+            usuarios |= estudiantes.mapped('user_id')  # Asegúrate de tener un campo `user_id` en el modelo `Estudiante`
+
 
         # Crear registros en la tabla intermedia agenda.usuario_comunicado
         for usuario in usuarios:
@@ -262,3 +285,90 @@ class Comunicado(models.Model):
                 self.archivo_nombre = archivo_nombre
             else:
                 self.archivo_nombre = 'archivo_desconocido'    
+
+
+    @api.depends('curso_ids', 'rol_ids')
+    def _compute_matching_user(self):
+        current_user = self.env.user
+        for record in self:
+            # Verificar si el usuario está en los roles seleccionados
+            roles_match = any(current_user in role.user_ids for role in record.rol_ids)
+            # Verificar si el usuario está en los cursos seleccionados
+            courses_match = any(student.user_id == current_user for course in record.curso_ids for student in course.estudiante_ids)
+
+            # Coincidencia para padres de estudiantes en los cursos
+            parent_match = any(
+                current_user == padre.user_id 
+                for course in record.curso_ids 
+                for student in course.estudiante_ids 
+                for padre in self.env['agenda.padre_familia'].search([('estudiante_ids', 'in', [student.id])])
+            )
+
+
+            teacher_match = any(
+                current_user == docente.user_id
+                for course in record.curso_ids
+                for docente_materia in self.env['agenda.curso_docente_materia'].search([('id_curso', '=', [course.id])])
+                for docente in docente_materia.id_docente_materia.id_docente
+            )
+            print(f"Teacher match for user {current_user.name}: {teacher_match}")
+
+            # Aplicar lógica condicional:
+            if record.rol_ids and record.curso_ids:
+                # Si hay roles y cursos seleccionados, ambos deben coincidir
+                record.matching_user = roles_match and (courses_match or parent_match or teacher_match)
+            elif record.rol_ids:
+                # Si sólo hay roles seleccionados, considerar sólo los roles
+                record.matching_user = roles_match
+            elif record.curso_ids:
+                # Si sólo hay cursos seleccionados, considerar sólo los cursos
+                record.matching_user = courses_match or parent_match or teacher_match
+            else:
+                # Si no hay roles ni cursos seleccionados, hacer visible para todos
+                record.matching_user = True  
+
+
+    @api.depends('rol_ids', 'curso_ids')
+    def _compute_allowed_user_ids(self):
+        for record in self:
+            # Conjuntos de usuarios
+            role_users = record.rol_ids.mapped('user_ids') if record.rol_ids else self.env['res.users']
+            allowed_users = self.env['res.users'].browse()
+            
+            # Si hay cursos seleccionados, obtener usuarios asociados
+            if record.curso_ids:
+                # Estudiantes en los cursos
+                students = record.curso_ids.mapped('estudiante_ids')
+                student_users = students.mapped('user_id')
+                
+                # Padres de los estudiantes
+                parent_users = students.mapped('padre_familia_ids.user_id')
+                
+                # Docentes de los cursos
+                docentes = record.curso_ids.mapped('curso_docente_materia_ids.id_docente_materia.id_docente')
+                teacher_users = docentes.mapped('user_id')
+            else:
+                # Si no hay cursos, conjuntos vacíos
+                student_users = self.env['res.users']
+                parent_users = self.env['res.users']
+                teacher_users = self.env['res.users']
+            
+            # Lógica condicional basada en la presencia de roles y cursos
+            if record.rol_ids and record.curso_ids:
+                # Usuarios que están en roles y asociados a los cursos
+                # Intersección de usuarios de roles con estudiantes, padres y docentes
+                allowed_users |= role_users & student_users
+                allowed_users |= role_users & parent_users
+                allowed_users |= role_users & teacher_users
+            elif record.rol_ids:
+                # Solo roles seleccionados
+                allowed_users = role_users
+            elif record.curso_ids:
+                # Solo cursos seleccionados
+                allowed_users = student_users | parent_users | teacher_users
+            else:
+                # Sin roles ni cursos, todos los usuarios
+                allowed_users = self.env['res.users'].search([])
+            
+            # Asignar usuarios permitidos
+            record.allowed_user_ids = allowed_users

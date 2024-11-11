@@ -18,9 +18,7 @@ class ComunicadoController(http.Controller):
 
         # Consulta los comunicados dirigidos al rol del usuario o sin roles asignados
         comunicados = request.env['agenda.comunicado'].sudo().search([
-            '|',
-            ('rol_ids.user_ids', 'in', user.id),
-            ('rol_ids', '=', False)
+            ('allowed_user_ids', 'in', user.id)
         ])
 
         # Serializar los datos de los comunicados para retornar en JSON
@@ -43,6 +41,7 @@ class ComunicadoController(http.Controller):
                 'administrativo': comunicado.administrativo_id.name if comunicado.administrativo_id else None,
                 'fecha_creacion': comunicado.create_date,
                 'roles': [role.name for role in comunicado.rol_ids],
+                'cursos': [curso.display_name for curso in comunicado.curso_ids],
                 'formatoarchivo': formato_archivo,
                 'publicURL': download_url,
             })
@@ -84,6 +83,7 @@ class ComunicadoController(http.Controller):
         archivo_file = kwargs.get('archivo')
         archivo_nombre = archivo_file.filename if archivo_file else None
         rol_ids = json.loads(kwargs.get('rol_ids', '[]'))  # Convertir a lista de IDs
+        curso_ids = json.loads(kwargs.get('curso_ids', '[]'))
 
         # Validar campos requeridos
         if not motivo or not texto:
@@ -108,7 +108,8 @@ class ComunicadoController(http.Controller):
                 'administrativo_id': administrativo.id,
                 'archivo_nombre': archivo_nombre,
                 'archivo': archivo_base64, 
-                'rol_ids': [(6, 0, rol_ids)]
+                'rol_ids': [(6, 0, rol_ids)],
+                'curso_ids': [(6, 0, curso_ids)],
             }
 
             # Crear comunicado en el modelo
@@ -141,6 +142,13 @@ class ComunicadoController(http.Controller):
             else:
                 usuarios = request.env['res.users'].sudo().search([('id', 'in', comunicado.rol_ids.mapped('user_ids').ids)])
             
+            for usuario in usuarios:
+                request.env['agenda.usuario_comunicado'].sudo().create({
+                    'usuario_id': usuario.id,
+                    'comunicado_id': comunicado.id,
+                    'enviado': True,
+                    'leido': False,
+                })
             # Devolver la respuesta en formato JSON
             return request.make_response(json.dumps({
                 'status': 'success', 
@@ -162,6 +170,7 @@ class ComunicadoController(http.Controller):
         archivo_file = kwargs.get('archivo')
         archivo_nombre = archivo_file.filename if archivo_file else None
         rol_ids = json.loads(kwargs.get('rol_ids', '[]'))  # Convertir a lista de IDs
+        curso_ids = json.loads(kwargs.get('curso_ids', '[]'))
     
         # Validar campos requeridos
         if not motivo or not texto:
@@ -187,7 +196,8 @@ class ComunicadoController(http.Controller):
                 'motivo': motivo,
                 'texto': texto,
                 'archivo_nombre': archivo_nombre,
-                'rol_ids': [(6, 0, rol_ids)]
+                'rol_ids': [(6, 0, rol_ids)],
+                'curso_ids': [(6, 0, curso_ids)],
             }
     
             # Si se proporciona un archivo nuevo, actualizar el archivo y subirlo a Dropbox
@@ -307,3 +317,27 @@ class ComunicadoController(http.Controller):
         except Exception as e:
             print("Error durante la solicitud:", e)
             raise Exception(f"Error al obtener access token: {str(e)}")
+
+
+
+    @http.route('/api/comunicado/lectores/<int:comunicado_id>', type='json', auth='user', methods=['GET'])
+    def get_lectores_comunicado(self, comunicado_id):
+        # Buscar el comunicado correspondiente
+        comunicado = request.env['agenda.comunicado'].sudo().browse(comunicado_id)
+        
+        # Verificar si existe el comunicado
+        if not comunicado.exists():
+            return {'error': 'Comunicado no encontrado'}
+
+        # Obtener todos los usuarios relacionados con el comunicado y sus estados
+        lectores_data = []
+        for usuario_comunicado in comunicado.usuario_comunicado_ids:
+            lectores_data.append({
+                'usuario_id': usuario_comunicado.usuario_id.id,
+                'nombre': usuario_comunicado.usuario_id.name,
+                'leido': usuario_comunicado.leido,
+                'enviado': usuario_comunicado.enviado
+            })
+
+        # Retornar la lista de usuarios con el estado de lectura y envío en formato JSON
+        return {'lectores': lectores_data}
