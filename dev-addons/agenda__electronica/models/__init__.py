@@ -18,3 +18,14 @@ from . import curso_docente_materia
 from . import notification
 from . import evento
 from . import EventoEstudianteRel
+from . import actividades
+from . import usuario_actividad
+from . import actividad_entrega
+from . import desafio
+from . import categoria
+from . import preguntas
+from . import opciones
+from . import estudiante_opciones 
+from . import desafio_estudiante  # Nombre corregido
+from . import solicitud_desafio
+from . import configuraciones

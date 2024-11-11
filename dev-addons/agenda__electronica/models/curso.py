@@ -12,6 +12,12 @@ class Curso(models.Model):
     display_name = fields.Char(string='Curso', compute='_compute_display_name', store=True)
     estudiante_ids = fields.One2many('agenda.estudiante', 'curso_id', string='Estudiantes')
 
+     curso_docente_materia_ids = fields.One2many(
+        'agenda.curso_docente_materia',  # Modelo relacionado
+        'id_curso',                      # Campo inverso en el modelo relacionado
+        string='Docentes y Materias'
+    )
+
     csv_file = fields.Binary(string="Archivo CSV")
     csv_filename = fields.Char(string="Nombre del Archivo CSV")
 

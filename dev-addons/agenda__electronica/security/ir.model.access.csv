@@ -53,3 +53,13 @@ access_evento_estudiantes_admin,agenda.evento_estudiante,model_agenda_evento_est
 access_user_device_token_user,user.device.token,model_user_device_token,base.group_user,1,1,1,1
 access_user_device_token_admin,user.device.token,model_user_device_token,base.group_system,1,1,1,1
 
+
+access_actividades_user,agenda.actividad,model_agenda_actividad,base.group_user,1,1,1,1
+access_actividades_admin,agenda.actividad,model_agenda_actividad,base.group_system,1,1,1,1
+
+access_usuario_actividades_user,agenda.usuario_actividad,model_agenda_usuario_actividad,base.group_user,1,1,1,1
+access_usuario_actividades_admin,agenda.usuario_actividad,model_agenda_usuario_actividad,base.group_system,1,1,1,1
+
+access_actividad_entrega_user,agenda.actividad_entrega,model_agenda_actividad_entrega,base.group_user,1,1,1,1
+access_actividad_entrega_admin,agenda.actividad_entrega,model_agenda_actividad_entrega,base.group_system,1,1,1,1
+

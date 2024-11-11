@@ -66,17 +66,7 @@ class Role(models.Model):
                 for user in role.user_ids:
                     if admin_group not in user.groups_id:
                         user.groups_id = [(4, admin_group.id)]
-            else:
-                for user in role.user_ids:
-                    admin_count = self.env['res.users'].search_count([
-                        ('groups_id', 'in', [admin_group.id])
-                    ])
-                    
-                    if admin_count <= 1:
-                        raise ValueError("No puedes eliminar el último administrador del sistema.")
-                    
-                    if admin_group in user.groups_id:
-                        user.groups_id = [(3, admin_group.id)]
+
 
     def init(self):
         """Crear roles predeterminados si no existen."""

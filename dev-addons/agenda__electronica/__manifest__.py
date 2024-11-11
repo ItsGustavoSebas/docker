@@ -36,6 +36,7 @@ Long description of module's purpose
         'views/cursos_views.xml',
         'views/notification_views.xml',
         'views/evento_views.xml',
+        'views/actividades_views.xml',
     ],
 
     # only loaded in demonstration mode
