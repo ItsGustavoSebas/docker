@@ -39,8 +39,8 @@ class AgendaNotificacion(models.Model):
         record = super(AgendaNotificacion, self).create(vals)
 
         # Configura el contenido de la notificación
-        notification_title = "Nueva Notificación"
-        notification_body = f"Tienes una {dict(self._fields['type'].selection).get(vals.get('type'))}"
+        notification_title = f"{dict(self._fields['type'].selection).get(vals.get('type'))}"
+        notification_body = self.data
 
         for token_record in record.user_id.device_token_ids:
             user_token = token_record.device_token
