@@ -30,8 +30,7 @@ class AgendaNotificacion(models.Model):
 
     # Inicializa Firebase Admin SDK solo una vez
     if not firebase_admin._apps:
-        cred_path = os.path.join(
-                os.path.dirname(__file__), '../static/firebase/firebase-adminsdk.json')
+        cred_path = os.path.join(os.path.dirname(__file__), '../static/speech/credenciales-google.json')
         cred = credentials.Certificate(cred_path)
         firebase_admin.initialize_app(cred)
 
