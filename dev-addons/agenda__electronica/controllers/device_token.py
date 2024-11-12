@@ -11,10 +11,12 @@ class DeviceTokenController(http.Controller):
         Actualiza el token de dispositivo del usuario autenticado.
         """
         user = request.env.user
-        user.device_token = token  # Asegúrate de que `device_token` esté definido en `res.users`
-        
-        # Guardar el cambio en la base de datos
-        user.sudo().write({'device_token': token})
+
+        # Crear un nuevo registro en 'user.device.token'
+        request.env['user.device.token'].sudo().create({
+            'user_id': user.id,
+            'token': token
+        })
 
         return Response(
             json.dumps({'status': 'success', 'message': 'Token actualizado'}),

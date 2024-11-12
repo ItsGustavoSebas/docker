@@ -28,6 +28,7 @@ class AgendaEventoController(http.Controller):
                 'resumen': evento.evento_id.resumen,
                 'fecha': evento.evento_id.fecha.strftime('%Y-%m-%d %H:%M:%S'),
                 'leido': evento.leido,
+                'asistencia': evento.asistencia,
                 'confirmacion': evento.confirmacion,
                 'estudiante_id': evento.estudiante_id.id,
             })
@@ -76,6 +77,7 @@ class AgendaEventoController(http.Controller):
                 'resumen': evento.evento_id.resumen,
                 'fecha': evento.evento_id.fecha.strftime('%Y-%m-%d %H:%M:%S'),
                 'leido': evento.leido,
+                'asistencia': evento.asistencia,
                 'confirmacion': evento.confirmacion,
                 'estudiante_id': evento.estudiante_id.id,
             }

@@ -54,7 +54,6 @@ class AgendaNotificacion(models.Model):
                     token=user_token,
                 )
 
-                # Envía el mensaje
                 response = messaging.send(message)
                 _logger.info("Firebase notification sent to %s: %s", user_token, response)
 
