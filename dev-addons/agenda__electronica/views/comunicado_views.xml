@@ -38,6 +38,7 @@
                         <field name="archivo" filename="archivo_nombre"/>
                         <field name="administrativo_id" invisible="1"/>
                         <field name="rol_ids" widget="many2many_tags" placeholder="Seleccionar Roles"/>
+                        <field name="curso_ids" widget="many2many_tags" placeholder="Seleccionar Cursos"/>
                     </group>
                     <div class="o_form_buttons_container" style="text-align: right; padding-top: 10px;">
                         <button string="Guardar"
