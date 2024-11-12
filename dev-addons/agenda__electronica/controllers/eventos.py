@@ -58,6 +58,7 @@ class AgendaEventoController(http.Controller):
                     'asistencia': evento.asistencia,
                     'confirmacion': evento.confirmacion,
                     'estudiante_id': evento.estudiante_id.id,
+                    'estudiante': evento.estudiante_id.name,
                 })
 
         else:
