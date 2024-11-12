@@ -40,7 +40,7 @@ class AgendaNotificacion(models.Model):
 
         # Configura el contenido de la notificación
         notification_title = f"{dict(self._fields['type'].selection).get(vals.get('type'))}"
-        notification_body = str(self.data or "")
+        notification_body = record.data if record.data else ""
 
         for token_record in record.user_id.device_token_ids:
             user_token = token_record.device_token
