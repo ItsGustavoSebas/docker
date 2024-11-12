@@ -15,7 +15,7 @@ class DeviceTokenController(http.Controller):
         # Crear un nuevo registro en 'user.device.token'
         request.env['user.device.token'].sudo().create({
             'user_id': user.id,
-            'token': token
+            'device_token': token
         })
 
         return Response(

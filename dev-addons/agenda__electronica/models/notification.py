@@ -14,7 +14,8 @@ class AgendaNotificacion(models.Model):
         selection=[
             ('nuevo_comunicado', 'Nuevo Comunicado'),
             ('nueva_tarea', 'Nueva Tarea'),
-            ('nueva_entrega', 'Nueva Entrega')
+            ('nueva_entrega', 'Nueva Entrega'),
+            ('nuevo_evento', 'Nuevo Evento'),
         ],
         string='Tipo de Notificación',
         required=True
