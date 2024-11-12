@@ -241,7 +241,7 @@ class Evento(models.Model):
         return res
 
     def _crear_relaciones_evento_estudiante(self):
-        """Crea las relaciones en agenda.evento_estudiante y notificaciones para cada estudiante."""
+        """Crea las relaciones en agenda.evento_estudiante y notificaciones para cada estudiante y sus padres."""
         if self.curso_ids:
             # Obtener todos los estudiantes de los cursos seleccionados
             estudiantes = self.env['agenda.estudiante'].search([
@@ -253,7 +253,7 @@ class Evento(models.Model):
             # Eliminar relaciones existentes para evitar duplicados
             self.env['agenda.evento_estudiante'].search([('evento_id', '=', self.id)]).unlink()
             
-            # Crear los registros en agenda.evento_estudiante y notificaciones para cada estudiante
+            # Crear los registros en agenda.evento_estudiante y notificaciones para cada estudiante y sus padres
             for estudiante in estudiantes:
                 # Crear relación en agenda.evento_estudiante
                 self.env['agenda.evento_estudiante'].create({
@@ -271,6 +271,17 @@ class Evento(models.Model):
                     'user_id': estudiante.user_id.id,  
                 })
 
+                # Obtener los padres de familia asociados al estudiante
+                padres = self.env['agenda.padre_familia'].search([
+                    ('estudiante_ids', 'in', estudiante.id)
+                ])
+                for padre in padres:
+                    # Crear una notificación para cada padre
+                    self.env['agenda.notificacion'].create({
+                        'type': 'nuevo_evento',
+                        'data': f"Se ha asignado un nuevo evento al estudiante {estudiante.name} del que eres responsable",
+                        'user_id': padre.user_id.id,
+                    })
 
     def action_registrar_asistencia(self):
         """Abrir la vista para registrar asistencia de los estudiantes asociados al evento."""
