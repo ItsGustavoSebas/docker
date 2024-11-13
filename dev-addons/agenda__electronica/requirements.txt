@@ -1,0 +1,5 @@
+firebase-admin
+dropbox
+google-cloud-speech
+pydub
+openai
