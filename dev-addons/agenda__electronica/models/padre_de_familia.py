@@ -29,6 +29,7 @@ class PadreFamilia(models.Model):
         partner_vals = {
             'name': vals.get('name'),
             'email': vals.get('email'),
+            'phone': vals.get('telefono'),
         }
         new_partner = self.env['res.partner'].create(partner_vals)
 
