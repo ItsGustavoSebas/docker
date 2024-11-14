@@ -1,0 +1,76 @@
+<odoo>
+    <!-- Vista del asistente de configuración de módulo -->
+    <record id="view_module_installation_wizard_form" model="ir.ui.view">
+        <field name="name">module.installation.wizard.form</field>
+        <field name="model">module.installation.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Configuración de Módulo" class="oe_form_centered">
+                <sheet>
+                    <style>
+                        /* Centra el contenido del formulario */
+                        .oe_form_centered {
+                            display: flex;
+                            flex-direction: column;
+                            align-items: center;
+                            justify-content: center;
+                            text-align: center;
+                            padding: 20px;
+                        }
+                        /* Centra el grupo del checkbox */
+                        .checkbox-group {
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            margin-bottom: 20px;
+                        }
+                        /* Estilo para los botones */
+                        .oe_form_centered .btn-primary {
+                            background-color: #5cb85c;
+                            border-color: #4cae4c;
+                            color: white;
+                            padding: 10px 20px;
+                            margin: 10px;
+                        }
+                        .oe_form_centered .btn-secondary {
+                            background-color: #d9534f;
+                            border-color: #d43f3a;
+                            color: white;
+                            padding: 10px 20px;
+                            margin: 10px;
+                        }
+                        /* Estilo para el formulario */
+                        .oe_form_centered form {
+                            border-radius: 8px;
+                            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+                            background-color: #ffffff;
+                            padding: 20px;
+                            max-width: 400px;
+                            width: 100%;
+                        }
+                    </style>
+                    <group class="checkbox-group">
+                        <field name="load_seeders" string="¿Desea cargar datos de ejemplo?"/>
+                    </group>
+                    <footer>
+                        <button string="Aplicar" type="object" name="action_apply" class="btn-primary"/>
+                        <button string="Cancelar" class="btn-secondary" special="cancel"/>
+                    </footer>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <!-- Acción para abrir el asistente -->
+    <record id="action_module_installation_wizard" model="ir.actions.act_window">
+        <field name="name">Configuración de Módulo</field>
+        <field name="res_model">module.installation.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- Acción automática que ejecuta el asistente al instalar el módulo -->
+    <record id="action_todo_module_installation_wizard" model="ir.actions.todo">
+        <field name="action_id" ref="action_module_installation_wizard"/>
+        <field name="name">Configuración de Módulo</field>
+    </record>
+</odoo>
