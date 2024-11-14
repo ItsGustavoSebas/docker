@@ -39,3 +39,14 @@ class Materia(models.Model):
             'target': 'current', 
             'context': {'hide_buttons': True},
         }
+
+
+    def create_default_materias(self):
+        """Crear materias predeterminadas si no existen."""
+        default_materias = ['Matemáticas', 'Lenguaje', 'Ciencias', 'Historia', 'Geografía']
+
+        for materia_name in default_materias:
+            # Verificar si la materia ya existe para evitar duplicados
+            existing_materia = self.env['materias.materia'].search([('name', '=', materia_name)], limit=1)
+            if not existing_materia:
+                self.create({'name': materia_name})                

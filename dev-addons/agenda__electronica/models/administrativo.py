@@ -39,6 +39,9 @@ class Administrativo(models.Model):
             new_user.write({'groups_id': [(4, group_user.id)]})
 
             vals['user_id'] = new_user.id
+            admin_role = self.env['roles.role'].search([('name', '=ilike', 'admin%')], limit=1)
+            if admin_role:
+                admin_role.user_ids = [(4, new_user.id)]   
 
         record = super(Administrativo, self).create(vals)
         return record
@@ -65,3 +68,54 @@ class Administrativo(models.Model):
             'target': 'current', 
             'context': {'hide_buttons': True}, 
         }
+
+
+    def create_default_administrativos(self):
+        """Crear administrativos predeterminados si no existen o asignar rol si es 'Mitchell Admin' una sola vez."""
+        default_administrativos = [
+            {'name': 'Administrativo 1', 'cargo': 'Secretario', 'email': 'admin1@gmail.com', 'password': '12345678'},
+            {'name': 'Administrativo 2', 'cargo': 'Contador', 'email': 'admin2@gmail.com', 'password': '12345678'},
+            {'name': 'Administrativo 4444', 'cargo': 'Contador', 'email': 'admin4444@gmail.com', 'password': '12345678'},
+        ]
+
+        # Verificar si el usuario "Mitchell Admin" está disponible para asignarse
+        mitchell_user = self.env['res.users'].search([('name', '=', 'Mitchell Admin')], limit=1)
+        mitchell_assigned = self.env['agenda.administrativo'].search([('user_id', '=', mitchell_user.id)], limit=1) if mitchell_user else None
+
+        for admin_data in default_administrativos:
+            # Verificar si el administrativo ya existe para evitar duplicados
+            existing_admin = self.env['agenda.administrativo'].search([('name', '=', admin_data['name'])], limit=1)
+            if not existing_admin:
+                if mitchell_user and not mitchell_assigned:
+                    # Asignar "Mitchell Admin" solo una vez si aún no está asignado
+                    admin_data.update({
+                        'user_id': mitchell_user.id,
+                    })
+                    mitchell_assigned = True  # Marcar como asignado para evitar futuras asignaciones
+                else:
+                    # Verificar si el usuario con el login ya existe
+                    existing_user = self.env['res.users'].search([('login', '=', admin_data['email'])], limit=1)
+                    if not existing_user:
+                        # Crear el `res.partner` y el `res.users` solo si no existen
+                        partner_vals = {
+                            'name': admin_data['name'],
+                            'email': admin_data['email'],
+                        }
+                        new_partner = self.env['res.partner'].create(partner_vals)
+
+                        user_vals = {
+                            'partner_id': new_partner.id,
+                            'login': admin_data['email'],
+                            'password': admin_data['password'],
+                        }
+                        new_user = self.env['res.users'].create(user_vals)
+                    else:
+                        new_user = existing_user
+
+                    # Asignar `user_id` al administrativo
+                    admin_data.update({
+                        'user_id': new_user.id,
+                    })
+
+                # Crear el administrativo con el usuario asignado o existente
+                self.create(admin_data)

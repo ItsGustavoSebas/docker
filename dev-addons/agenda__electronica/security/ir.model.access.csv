@@ -63,3 +63,8 @@ access_usuario_actividades_admin,agenda.usuario_actividad,model_agenda_usuario_a
 access_actividad_entrega_user,agenda.actividad_entrega,model_agenda_actividad_entrega,base.group_user,1,1,1,1
 access_actividad_entrega_admin,agenda.actividad_entrega,model_agenda_actividad_entrega,base.group_system,1,1,1,1
 
+access_module_installation_wizard_user,access_module_installation_wizard,model_module_installation_wizard,base.group_user,1,1,1,1
+access_module_installation_wizard_admin,access_module_installation_wizard,model_module_installation_wizard,base.group_system,1,1,1,1
+
+access_usuario_categorias_user,agenda.categoria,model_agenda_categoria,base.group_user,1,1,1,1
+access_usuario_categorias_admin,agenda.categoria,model_agenda_categoria,base.group_system,1,1,1,1

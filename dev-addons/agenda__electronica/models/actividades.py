@@ -273,6 +273,7 @@ class Actividad(models.Model):
             actividad_new.archivo_url = ""
     
         usuarios = self._obtener_usuarios_permitidos(actividad_new)
+        partner_ids = []
         # Crear registros en la tabla intermedia agenda.usuario_actividad
         for usuario in usuarios:
             self.env['agenda.usuario_actividad'].create({
@@ -281,6 +282,23 @@ class Actividad(models.Model):
                 'enviado': True,
                 'leido': False,
             })
+            self.env['agenda.notificacion'].create({
+                'type': 'nueva_actividad',
+                'data': f"¡{usuario.partner_id.name}! Se acaba de publicar una nueva actividad, corre a revisarla.",
+                'user_id': usuario.id,  
+            })
+            if usuario.partner_id:
+                partner_ids.append((4, usuario.partner_id.id))
+
+
+        self.env['calendar.event'].create({
+            'name': actividad_new.motivo or "Nueva Actividad",  # Usar el motivo de la actividad
+            'start': actividad_new.fecha_inicio,  # Fecha de inicio
+            'stop': actividad_new.fecha_presentacion,  # Fecha de fin
+            'description': vals.get('texto') or "",  # Descripción de la actividad
+            'user_id': user.id,  # Asigna el usuario actual como responsable
+            'partner_ids': partner_ids,  # Agregar los usuarios específicos como asistentes
+        })
     
         return actividad_new
 

@@ -194,6 +194,7 @@ class Comunicado(models.Model):
             usuarios |= estudiantes.mapped('user_id')  # Asegúrate de tener un campo `user_id` en el modelo `Estudiante`
 
 
+        partner_ids = [] 
         # Crear registros en la tabla intermedia agenda.usuario_comunicado
         for usuario in usuarios:
             self.env['agenda.usuario_comunicado'].create({
@@ -202,7 +203,23 @@ class Comunicado(models.Model):
                 'enviado': True,
                 'leido': False,
             })
+            self.env['agenda.notificacion'].create({
+                'type': 'nuevo_comunicado',
+                'data': f"¡{usuario.partner_id.name}! Se acaba de publicar un nuevo comunicado, corre a revisarlo.",
+                'user_id': usuario.id,  
+            })
+            if usuario.partner_id:
+                partner_ids.append((4, usuario.partner_id.id))
 
+
+        self.env['calendar.event'].create({
+            'name': comunicado.motivo or "Nueva Actividad",  # Usar el motivo de la actividad
+            'start': fields.Datetime.now(),
+            'stop':  fields.Datetime.now(),
+            'description': vals.get('texto') or "",  # Descripción de la actividad
+            'user_id': user.id,  # Asigna el usuario actual como responsable
+            'partner_ids': partner_ids,  # Agregar los usuarios específicos como asistentes
+        })
         return comunicado
 
 

@@ -61,6 +61,10 @@ class Estudiante(models.Model):
 
         vals['user_id'] = new_user.id
         record = super(Estudiante, self).create(vals)
+        estudiante_role = self.env['roles.role'].search([('name', '=ilike', 'estud%')], limit=1)
+        if estudiante_role:
+            estudiante_role.user_ids = [(4, new_user.id)]
+
         return record
 
     def action_guardar_y_volver(self):
@@ -83,3 +87,50 @@ class Estudiante(models.Model):
             'target': 'current',
         }
 
+
+
+
+    def create_default_students(self):
+        """Crear estudiantes predeterminados si no existen."""
+        default_students = [
+            {'name': 'Estudiante 1', 'ci': '123456', 'email': 'estudiante11@gmail.com', 'password': '12345678', 'curso_name': 1},
+            {'name': 'Estudiante 2', 'ci': '654321', 'email': 'estudiante22@gmail.com', 'password': '12345678', 'curso_name': 1},
+            {'name': 'Estudiante 3', 'ci': '654322', 'email': 'estudiante33@gmail.com', 'password': '12345678', 'curso_name': 1},
+            {'name': 'Estudiante 4', 'ci': '654323', 'email': 'estudiante44@gmail.com', 'password': '12345678', 'curso_name': 2},
+            {'name': 'Estudiante 5', 'ci': '654324', 'email': 'estudiante55@gmail.com', 'password': '12345678', 'curso_name': 3},
+        ]
+        
+        for student_data in default_students:
+            # Verificar si el estudiante ya existe para evitar duplicados
+            existing_student = self.env['agenda.estudiante'].search([('ci', '=', student_data['ci'])], limit=1)
+            if not existing_student:
+                # Verificar si el usuario con el login ya existe
+                existing_user = self.env['res.users'].search([('login', '=', student_data['email'])], limit=1)
+                if not existing_user:
+                    # Crear el `res.partner` y el `res.users` solo si no existen
+                    partner_vals = {
+                        'name': student_data['name'],
+                        'email': student_data['email'],
+                    }
+                    new_partner = self.env['res.partner'].create(partner_vals)
+    
+                    user_vals = {
+                        'partner_id': new_partner.id,
+                        'login': student_data['email'],
+                        'password': student_data['password'],
+                    }
+                    new_user = self.env['res.users'].create(user_vals)
+                else:
+                    new_user = existing_user
+                
+                # Buscar el curso correspondiente
+                curso = self.env['agenda.curso'].search([('curso', '=', student_data.pop('curso_name'))], limit=1)
+                if curso:
+                    # Asignar `user_id` y `curso_id` al estudiante y crear el registro sin crear nuevo `res.users`
+                    student_data.update({
+                        'user_id': new_user.id,
+                        'curso_id': curso.id,
+                    })
+                    # Crear el estudiante sin duplicar la creación del usuario
+                    super(Estudiante, self).create(student_data)
+    

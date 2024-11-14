@@ -124,3 +124,24 @@ class Curso(models.Model):
             'target': 'current',
             'context': {'hide_buttons': True},
         }
+
+
+
+
+    def create_default_courses(self):
+        """Crear cursos predeterminados si no existen."""
+        default_courses = [
+            {'curso': 1, 'paralelo': 'A'},
+            {'curso': 1, 'paralelo': 'B'},
+            {'curso': 2, 'paralelo': 'A'},
+            {'curso': 2, 'paralelo': 'B'},
+        ]
+
+        for course_data in default_courses:
+            # Verificar si el curso ya existe para evitar duplicados
+            existing_course = self.env['agenda.curso'].search([
+                ('curso', '=', course_data['curso']),
+                ('paralelo', '=', course_data['paralelo'])
+            ], limit=1)
+            if not existing_course:
+                self.create(course_data)
