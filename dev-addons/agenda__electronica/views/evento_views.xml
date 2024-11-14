@@ -115,5 +115,5 @@
               name="Lista de Eventos"
               parent="menu_agenda_root"
               action="action_eventos_list"
-              groups="base.group_system"/>
+              groups="base.group_user"/>
 </odoo>
