@@ -31,11 +31,15 @@ Agenda electrónica académica que permite la comunicación entre padres, estudi
         'views/notification_views.xml',
         'views/evento_views.xml',
         'views/actividades_views.xml',
+        'views/module_installation_wizard_view.xml',
     ],
 
     'demo': [
         'demo/demo.xml',
     ],
+
+    'hooks.post_init_hook': 'execute_wizard_after_install',
+
 
     'installable': True,
     'application': True,

@@ -16,6 +16,9 @@ class AgendaNotificacion(models.Model):
             ('nueva_tarea', 'Nueva Tarea'),
             ('nueva_entrega', 'Nueva Entrega'),
             ('nuevo_evento', 'Nuevo Evento'),
+            ('nuevo_comunicado', 'Nuevo Comunicado'),
+            ('nueva_actividad', 'Nueva Actividad'),
+            ('nuevo_desafio', 'Nuevo Desafio'),
         ],
         string='Tipo de Notificación',
         required=True

@@ -39,3 +39,13 @@ class Permiso(models.Model):
         }
 
 
+
+    def create_default_permissions(self):
+        """Crear permisos predeterminados si no existen."""
+        default_permissions = ['Permiso 1', 'Permiso 2', 'Permiso 3']
+
+        for permission_name in default_permissions:
+            # Verificar si el permiso ya existe para evitar duplicados
+            existing_permission = self.env['permisos.permiso'].search([('name', '=', permission_name)], limit=1)
+            if not existing_permission:
+                self.env['permisos.permiso'].create({'name': permission_name})

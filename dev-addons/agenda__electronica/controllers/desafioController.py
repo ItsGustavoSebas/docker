@@ -137,6 +137,11 @@ class DesafioController(http.Controller):
                 'is_aceptado': False,
                 'mensaje': mensaje
             })
+            request.env['agenda.notificacion'].create({
+                'type': 'nuevo_desafio',
+                'data': f"{desafiante.name} te acaba de desafiar, ¡Demuestrale que puedes ganarle!",
+                'user_id': desafiado.user_id.id,  
+            })
 
             # Respuesta JSON de éxito
             return {'status': 'success', 'solicitud_id': solicitud.id}

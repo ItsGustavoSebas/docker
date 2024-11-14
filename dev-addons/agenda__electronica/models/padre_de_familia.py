@@ -42,6 +42,9 @@ class PadreFamilia(models.Model):
 
         vals['user_id'] = new_user.id
         record = super(PadreFamilia, self).create(vals)
+        padre_role = self.env['roles.role'].search([('name', '=ilike', 'padr%')], limit=1)
+        if padre_role:
+            padre_role.user_ids = [(4, new_user.id)]
         return record
 
     def action_guardar_y_volver(self):
@@ -66,3 +69,45 @@ class PadreFamilia(models.Model):
             'target': 'current', 
             'context': {'hide_buttons': True}, 
         }
+
+
+    def create_default_padres_familia(self):
+        """Crear padres de familia predeterminados si no existen."""
+        default_padres = [
+            {'name': 'Padre 1', 'ci': '123456', 'telefono': '555-1234', 'email': 'padre12@gmail.com', 'password': '12345678', 'estudiante_cis': ['123456', '654321']},
+            {'name': 'Padre 2', 'ci': '654321', 'telefono': '555-5678', 'email': 'padre22@gmail.com', 'password': '12345678', 'estudiante_cis': ['654322']},
+        ]
+
+        for padre_data in default_padres:
+            # Verificar si el padre ya existe para evitar duplicados
+            existing_padre = self.env['agenda.padre_familia'].search([('ci', '=', padre_data['ci'])], limit=1)
+            if not existing_padre:
+                # Verificar si el usuario con el login ya existe
+                existing_user = self.env['res.users'].search([('login', '=', padre_data['email'])], limit=1)
+                if not existing_user:
+                    # Crear el `res.partner` y el `res.users` solo si no existen
+                    partner_vals = {
+                        'name': padre_data['name'],
+                        'email': padre_data['email'],
+                    }
+                    new_partner = self.env['res.partner'].create(partner_vals)
+
+                    user_vals = {
+                        'partner_id': new_partner.id,
+                        'login': padre_data['email'],
+                        'password': padre_data['password'],
+                    }
+                    new_user = self.env['res.users'].create(user_vals)
+                else:
+                    new_user = existing_user
+
+                # Obtener IDs de estudiantes en base a la lista de cédulas proporcionadas
+                estudiante_ids = self.env['agenda.estudiante'].search([('ci', 'in', padre_data.pop('estudiante_cis'))]).ids
+
+                # Asignar `user_id` y `estudiante_ids` al padre y crear el registro sin duplicar `res.users`
+                padre_data.update({
+                    'user_id': new_user.id,
+                    'estudiante_ids': [(6, 0, estudiante_ids)],
+                })
+                # Crear el padre de familia sin duplicar la creación del usuario
+                super(PadreFamilia, self).create(padre_data)

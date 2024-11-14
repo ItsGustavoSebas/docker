@@ -29,3 +29,4 @@ from . import estudiante_opciones
 from . import desafio_estudiante  # Nombre corregido
 from . import solicitud_desafio
 from . import configuraciones
+from . import module_installation_wizard

@@ -48,6 +48,9 @@ class Docente(models.Model):
         # Crear registros en docente_materia y curso_docente_materia
         record._crear_docente_materia()
         record._crear_curso_docente_materia()
+        docente_role = self.env['roles.role'].search([('name', '=ilike', 'docen%')], limit=1)
+        if docente_role:
+            docente_role.user_ids = [(4, new_user.id)]
         return record
 
     def write(self, vals):
@@ -103,3 +106,48 @@ class Docente(models.Model):
             'res_id': self.id,
             'target': 'current',
         }
+
+
+
+    def create_default_docentes(self):
+        """Crear docentes predeterminados si no existen."""
+        default_docentes = [
+            {'name': 'Docente 1', 'ci': '123456', 'telefono': '555-1234', 'email': 'docente11@gmail.com', 'password': 'password1', 'materia_names': ['Matemáticas'], 'curso_nums': [1]},
+            {'name': 'Docente 2', 'ci': '654321', 'telefono': '555-5678', 'email': 'docente22@gmail.com', 'password': 'password2', 'materia_names': ['Lenguaje'], 'curso_nums': [2]},
+        ]
+
+        for docente_data in default_docentes:
+            # Verificar si el docente ya existe para evitar duplicados
+            existing_docente = self.env['agenda.docente'].search([('ci', '=', docente_data['ci'])], limit=1)
+            if not existing_docente:
+                # Verificar si el usuario con el login ya existe
+                existing_user = self.env['res.users'].search([('login', '=', docente_data['email'])], limit=1)
+                if not existing_user:
+                    # Crear el `res.partner` y el `res.users` solo si no existen
+                    partner_vals = {
+                        'name': docente_data['name'],
+                        'email': docente_data['email'],
+                    }
+                    new_partner = self.env['res.partner'].create(partner_vals)
+
+                    user_vals = {
+                        'partner_id': new_partner.id,
+                        'login': docente_data['email'],
+                        'password': docente_data['password'],
+                    }
+                    new_user = self.env['res.users'].create(user_vals)
+                else:
+                    new_user = existing_user
+
+                # Obtener IDs de materias y cursos
+                materia_ids = self.env['materias.materia'].search([('name', 'in', docente_data.pop('materia_names'))]).ids
+                curso_ids = self.env['agenda.curso'].search([('curso', 'in', docente_data.pop('curso_nums'))]).ids
+
+                # Asignar `user_id`, `materia_ids`, y `curso_ids` al docente y crear el registro sin duplicar `res.users`
+                docente_data.update({
+                    'user_id': new_user.id,
+                    'materia_ids': [(6, 0, materia_ids)],
+                    'curso_ids': [(6, 0, curso_ids)],
+                })
+                # Crear el docente sin duplicar la creación del usuario
+                super(Docente, self).create(docente_data)

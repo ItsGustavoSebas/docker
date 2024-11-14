@@ -77,3 +77,28 @@ class Role(models.Model):
             existing_role = self.env['roles.role'].search([('name', '=', role_name)], limit=1)
             if not existing_role:
                 self.env['roles.role'].create({'name': role_name})
+
+
+
+    def create_default_roles(self):
+        """Crear roles predeterminados y asignarlos a usuarios según el prefijo del nombre."""
+        default_roles = {
+            'Administradores': 'admin',
+            'Docentes': 'docente',
+            'Padres': 'padre',
+            'Estudiantes': 'estudiante'
+        }
+
+        for role_name, prefix in default_roles.items():
+            # Verificar si el rol ya existe para evitar duplicados
+            role = self.env['roles.role'].search([('name', '=', role_name)], limit=1)
+            if not role:
+                role = self.env['roles.role'].create({'name': role_name})
+            
+            # Asignar usuarios cuyo nombre comienza con el prefijo al rol correspondiente
+            matching_users = self.env['res.users'].search([('name', '=ilike', f'{prefix}%')])
+            role.user_ids = [(4, user.id) for user in matching_users]
+
+            # Opcionalmente, asignar permisos predeterminados (si los permisos están definidos para cada rol)
+            default_permissions = self.env['permisos.permiso'].search([('name', 'ilike', role_name)])
+            role.permiso_ids = [(4, permiso.id) for permiso in default_permissions]
